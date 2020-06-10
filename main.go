@@ -63,7 +63,7 @@ const (
 var bootTime int
 
 const (
-	bootTimeFlag  = "boottime"
+	bootTimeFlag  = "bootTime"
 	bootTimeUsage = "Time for waiting reboot"
 )
 
@@ -105,9 +105,9 @@ func init() {
 
 	switch modeStr {
 	case "client":
-		if ipAddrStr == "" || netAddrStr == "" || macAddrStr == "" || clientPortStr == "" || serverPortStr == "" || timeout <= 0 {
+		if ipAddrStr == "" || netAddrStr == "" || macAddrStr == "" || clientPortStr == "" || serverPortStr == "" || timeout <= 0 || bootTime <= 0 {
 			flag.PrintDefaults()
-			panic("You must specify ip, net, mac, port and timeout > 0")
+			panic("You must specify ip, net, mac, port, timeout > 0 and bootTime > 0")
 		}
 		log.Printf("Client Mode\nTarget IP=%s; BCast NW=%s; Target MAC=%s; Client TCP Port=%s; Server UDP Port=%s; Timeout=%d\n", ipAddrStr, netAddrStr, macAddrStr, clientPortStr, serverPortStr, timeout)
 	case "server":
