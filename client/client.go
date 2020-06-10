@@ -38,12 +38,14 @@ func (whcc *WHControlClient) Hibernate() error {
 	return whcc.sendUDP("hibernate", false)
 }
 
-func (whcc *WHControlClient) Start(state *State) {
+func (whcc *WHControlClient) Start(state *State, bootGrace *State) {
 	for {
-		if err := whcc.Check(); err != nil {
-			state.Set(false)
-		} else {
-			state.Set(true)
+		if !bootGrace.Get() {
+			if err := whcc.Check(); err != nil {
+				state.Set(false)
+			} else {
+				state.Set(true)
+			}
 		}
 		time.Sleep(time.Duration(2*whcc.timeout) * time.Second)
 	}

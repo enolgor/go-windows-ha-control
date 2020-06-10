@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type State struct {
@@ -30,15 +31,17 @@ type HASwitch struct {
 	state      *State
 	clientPort string
 	client     *WHControlClient
+	bootGrace  *State
+	bootTime   int
 }
 
-func NewHASwitch(clientPort string, client *WHControlClient) *HASwitch {
-	return &HASwitch{&State{state: false}, clientPort, client}
+func NewHASwitch(clientPort string, client *WHControlClient, bootTime int) *HASwitch {
+	return &HASwitch{&State{state: false}, clientPort, client, &State{state: false}, bootTime}
 }
 
 func (has *HASwitch) Start() error {
 	http.HandleFunc("/", has.serve)
-	go has.client.Start(has.state)
+	go has.client.Start(has.state, has.bootGrace)
 	return http.ListenAndServe(":"+has.clientPort, nil)
 }
 
@@ -64,6 +67,11 @@ func (has *HASwitch) serve(w http.ResponseWriter, r *http.Request) {
 				if err := has.client.Hibernate(); err != nil {
 					log.Println("Failed to hibernate", err)
 				}
+				has.bootGrace.Set(true)
+				go func() {
+					time.Sleep(time.Duration(has.bootTime) * time.Second)
+					has.bootGrace.Set(false)
+				}()
 				has.state.Set(newState)
 			}
 		}

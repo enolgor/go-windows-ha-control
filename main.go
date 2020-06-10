@@ -60,6 +60,13 @@ const (
 	timeoutUsage = "Timeout for waiting response (seconds)"
 )
 
+var bootTime int
+
+const (
+	bootTimeFlag  = "boottime"
+	bootTimeUsage = "Time for waiting reboot"
+)
+
 func init() {
 	log.SetOutput(os.Stdout)
 
@@ -71,10 +78,18 @@ func init() {
 	envServerPortStr := os.Getenv("SERVER_PORT")
 	envTimeoutStr := os.Getenv("TIMEOUT")
 	envTimeout := 0
+	envBootTimeStr := os.Getenv("BOOT_TIME")
+	envBootTime := 0
 	if envTimeoutStr != "" {
 		var err error
 		if envTimeout, err = strconv.Atoi(envTimeoutStr); err != nil {
 			panic("Env var TIMEOUT is not an int")
+		}
+	}
+	if envBootTimeStr != "" {
+		var err error
+		if envBootTime, err = strconv.Atoi(envBootTimeStr); err != nil {
+			panic("Env var BOOT_TIME is not an int")
 		}
 	}
 
@@ -85,6 +100,7 @@ func init() {
 	flag.StringVar(&clientPortStr, clientPortFlag, envClientPortStr, clientPortUsage)
 	flag.StringVar(&serverPortStr, serverPortFlag, envServerPortStr, serverPortUsage)
 	flag.IntVar(&timeout, timeoutFlag, envTimeout, timeoutUsage)
+	flag.IntVar(&bootTime, bootTimeFlag, envBootTime, bootTimeUsage)
 	flag.Parse()
 
 	switch modeStr {
@@ -143,7 +159,7 @@ func doClient() error {
 	/*if err = c.Check(); err != nil {
 		return err
 	}*/
-	haSwitch := client.NewHASwitch(clientPortStr, c)
+	haSwitch := client.NewHASwitch(clientPortStr, c, bootTime)
 	if err = haSwitch.Start(); err != nil {
 		return err
 	}
