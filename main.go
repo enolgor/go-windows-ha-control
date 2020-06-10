@@ -141,24 +141,18 @@ func doClient() error {
 	var netAddr *net.UDPAddr
 	var mac net.HardwareAddr
 	var c *client.WHControlClient
-	if ipAddr, err = net.ResolveIPAddr("", "192.168.1.107"); err != nil {
+	if ipAddr, err = net.ResolveIPAddr("", ipAddrStr); err != nil {
 		return err
 	}
-	if netAddr, err = net.ResolveUDPAddr("", "192.168.1.255:7"); err != nil {
+	if netAddr, err = net.ResolveUDPAddr("", netAddrStr); err != nil {
 		return err
 	}
-	if mac, err = net.ParseMAC("D0:17:C2:AB:A6:C9"); err != nil {
+	if mac, err = net.ParseMAC(macAddrStr); err != nil {
 		return err
 	}
 	if c, err = client.NewClient(ipAddr, netAddr, mac, serverPortStr, timeout); err != nil {
 		return err
 	}
-	/*if err = c.Wake(); err != nil {
-		return err
-	}*/
-	/*if err = c.Check(); err != nil {
-		return err
-	}*/
 	haSwitch := client.NewHASwitch(clientPortStr, c, bootTime)
 	if err = haSwitch.Start(); err != nil {
 		return err

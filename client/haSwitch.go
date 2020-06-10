@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -45,6 +44,20 @@ func (has *HASwitch) Start() error {
 	return http.ListenAndServe(":"+has.clientPort, nil)
 }
 
+func bool2Str(state bool) string {
+	if state {
+		return "ON"
+	}
+	return "OFF"
+}
+
+func str2bool(str string) bool {
+	if str == "ON" {
+		return true
+	}
+	return false
+}
+
 func (has *HASwitch) serve(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST", "PUT":
@@ -52,10 +65,7 @@ func (has *HASwitch) serve(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			break
 		}
-		newState, err := strconv.ParseBool(string(bytes))
-		if err != nil {
-			break
-		}
+		newState := str2bool(string(bytes))
 		currentState := has.state.Get()
 		if newState != currentState {
 			if newState {
@@ -76,5 +86,5 @@ func (has *HASwitch) serve(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	fmt.Fprintf(w, "%t\n", has.state.Get())
+	fmt.Fprintf(w, "%s\n", bool2Str(has.state.Get()))
 }
