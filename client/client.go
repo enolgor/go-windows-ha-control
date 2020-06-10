@@ -31,11 +31,11 @@ func (whcc *WHControlClient) Wake() error {
 }
 
 func (whcc *WHControlClient) Check() error {
-	return whcc.sendUDP("check")
+	return whcc.sendUDP("check", true)
 }
 
 func (whcc *WHControlClient) Hibernate() error {
-	return whcc.sendUDP("hibernate")
+	return whcc.sendUDP("hibernate", false)
 }
 
 func (whcc *WHControlClient) Start(state *State) {
@@ -49,18 +49,21 @@ func (whcc *WHControlClient) Start(state *State) {
 	}
 }
 
-func (whcc *WHControlClient) sendUDP(operation string) error {
+func (whcc *WHControlClient) sendUDP(operation string, waitResp bool) error {
 	p := make([]byte, 1024)
 	conn, err := net.Dial("udp", whcc.ipAddr.String()+":"+whcc.serverPort)
 	defer conn.Close()
-	go func() {
-		time.Sleep(time.Duration(whcc.timeout) * time.Second)
-		conn.Close()
-	}()
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(conn, operation)
+	if !waitResp {
+		return nil
+	}
+	go func() {
+		time.Sleep(time.Duration(whcc.timeout) * time.Second)
+		conn.Close()
+	}()
 	var n int
 	n, err = bufio.NewReader(conn).Read(p)
 	resp := string(p[:n])
