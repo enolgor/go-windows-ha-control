@@ -86,5 +86,5 @@ func (has *HASwitch) serve(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	fmt.Fprintf(w, "%s\n", bool2Str(has.state.Get()))
+	fmt.Fprintf(w, "%s", bool2Str(has.state.Get()))
 }
